@@ -1,0 +1,43 @@
+import pandas as pd
+
+# Cargar el DataFrame desde el archivo CSV
+path = "/home/maobar/data/prueba1.csv"
+data = pd.read_csv(path)
+
+def filtrar(data, CFN_list, CANTIDAD_SOLICITADA_list):
+    resultados = []  # Lista para almacenar resultados
+
+    for cfn, cantidad_solicitada in zip(CFN_list, CANTIDAD_SOLICITADA_list):  
+        # Filtrar por CFN    
+        df_filtrar = data[data["CFN"] == cfn]
+
+        # Ordenar descendentemente los valores por DIAS
+        df_filtrar = df_filtrar.sort_values(by="DIAS", ascending=False)
+
+        # Iterar sobre los lotes filtrados
+        for index, row in df_filtrar.iterrows(): 
+            if cantidad_solicitada <= 0:
+                break  
+
+            if cantidad_solicitada >= row['QTY']:
+                resultados.append({'CFN': row['CFN'], 'LOTE': row['LOTE'], 'QTY': row['QTY']})
+                cantidad_solicitada -= row['QTY']
+            else:
+                resultados.append({'CFN': row['CFN'], 'LOTE': row['LOTE'], 'QTY': cantidad_solicitada})
+                cantidad_solicitada = 0  # Se satisface la cantidad solicitada
+
+    # Crear un DataFrame a partir de los resultados
+    resultados_df = pd.DataFrame(resultados)
+
+    return resultados_df
+
+# Ejemplo de uso
+cfn_input = ["XYZ", "ASD","NAN"]
+cantidad_solicitada_input = [300, 10, 200]
+resultado_df = filtrar(data, cfn_input, cantidad_solicitada_input)
+
+# Exportar el DataFrame a un archivo CSV
+resultado_df.to_csv("/home/maobar/data/resultados_filtrados.csv", index=False)
+
+# Mostrar el DataFrame (opcional)
+print(resultado_df)
